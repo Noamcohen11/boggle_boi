@@ -25,12 +25,11 @@ def __coord_legal(coordinate: Tuple[int, int], board: Board) -> bool:
     return 0 <= x < len(board) and 0 <= y < len(board[0])
 
 
-def __find_possibe_movements(tile: Tuple[int, int], board):
+def __possibe_movements(tile: Tuple[int, int], board):
     """Finds all possible movements from a given tile.
     :param tile: tuple representing the tile.
     :param board: two dimensional list of strings representing the board.
     :return: list of tuples representing the possible movements."""
-
     possible_movements = []
     for x, y in DIRECTIONS:
         new_tile = (tile[0] + x, tile[1] + y)
@@ -64,14 +63,23 @@ def is_valid_path(
 
     # Check if the rest of the path is legal.
     for x, y in path[1::]:
-        if (x, y) not in __find_possibe_movements((former_x, former_y), board):
+        if (x, y) not in __possibe_movements((former_x, former_y), board):
             return None
         word += board[x][y]
         former_x, former_y = x, y
+        
     if word in words:
         return word
 
     return None
+
+
+def __word_from_path(board: Board, path: Path) -> str:
+    """Returns the word formed by a given path.
+    :param board: two dimensional list of strings representing the board.
+    :param path: list of tuples representing the path taken to form a word.
+    :return: the word formed by the path."""
+    return "".join([board[x][y] for x, y in path])
 
 
 def __find_paths(
@@ -102,7 +110,7 @@ def __find_paths(
     # If we got the entire word, Check if it is in the list of words.
     if n == new_string_size:
         # Get the new word:
-        word = "".join([board[x][y] for x, y in new_path])
+        word = __word_from_path(board, new_path)
         if word in words:
             return [new_path]
         return []
@@ -113,7 +121,7 @@ def __find_paths(
 
     # Continue to search for paths.
     paths = []
-    new_tiles = __find_possibe_movements(tile, board)
+    new_tiles = __possibe_movements(tile, board)
     for new_tile in new_tiles:
 
         # We can't return to a tile we already visited.
@@ -143,7 +151,7 @@ def find_length_n_paths(
     :return: list of paths of length n form every possible tile.
     """
     if n == 0:
-        return [[]]
+        return []
     else:
         paths = []
         for i in range(len(board)):
@@ -165,7 +173,7 @@ def find_length_n_words(
     :return: list of paths that form a word of length n form every possible tile.
     """
     if n == 0:
-        return [[]]
+        return []
     else:
         paths = []
         for i in range(len(board)):
@@ -185,9 +193,16 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     """
     # Find the longest possible word in the dictionary.
     max_path_len = len(max(words, key=len))
+    found_words_list = []
+    tot_paths = []
+
     for n in range(max_path_len, 0, -1):
         paths = find_length_n_paths(n, board, words)
-        if paths:
-            return paths
+        for path in paths:
+            # Check if the word was already found.
+            word = __word_from_path(board, path)
+            if word not in found_words_list:
+                found_words_list.append(word)
+                tot_paths.append(path)
 
-    return [[]]
+    return tot_paths
