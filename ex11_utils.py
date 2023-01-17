@@ -1,7 +1,8 @@
 from typing import List, Tuple, Iterable, Optional
 
 Board = List[List[str]]
-Path = List[Tuple[int, int]]
+Tile = Tuple[int, int]
+Path = List[Tile]
 
 # legal directions to move in.
 DIRECTIONS = [
@@ -16,7 +17,7 @@ DIRECTIONS = [
 ]
 
 
-def __coord_legal(coordinate: Tuple[int, int], board: Board) -> bool:
+def __coord_legal(coordinate: Tile, board: Board) -> bool:
     """Checks if a coordinate is legal on the board.
     :param coordinate: tuple representing the coordinate.
     :param board: two dimensional list of strings representing the board.
@@ -25,7 +26,7 @@ def __coord_legal(coordinate: Tuple[int, int], board: Board) -> bool:
     return 0 <= x < len(board) and 0 <= y < len(board[0])
 
 
-def __possibe_movements(tile: Tuple[int, int], board):
+def __possibe_movements(tile: Tile, board) -> List[Tile]:
     """Finds all possible movements from a given tile.
     :param tile: tuple representing the tile.
     :param board: two dimensional list of strings representing the board.
@@ -36,6 +37,29 @@ def __possibe_movements(tile: Tuple[int, int], board):
         if __coord_legal(new_tile, board):
             possible_movements.append(new_tile)
     return possible_movements
+
+
+def __partial_words_set(
+    words: Iterable[str], use_max_size=False, max_word_size: int = -1
+) -> set[str]:
+    """create a set of all partial words from dict
+
+    Args:
+        words (Iterable[str]): list of strings representing the words that can be formed.
+        use_max_size (bool, optional): If True, only add
+            partial words from words that are smaller than max_word_size
+        max_word_size (int, optional): max word size to use. Defaulty not used.
+
+    Returns:
+        set[str]: set of all partial words.
+    """
+    partial_words = set()
+    for word in words:
+        if use_max_size and len(word) > max_word_size:
+            continue
+        partial_words.update({word[0:i] for i in range(len(word))})
+    print("sdasd", words, max_word_size, partial_words)
+    return partial_words
 
 
 def is_valid_path(
@@ -67,7 +91,7 @@ def is_valid_path(
             return None
         word += board[x][y]
         former_x, former_y = x, y
-        
+
     if word in words:
         return word
 
@@ -86,7 +110,8 @@ def __find_paths(
     n: int,
     board: Board,
     words: Iterable[str],
-    tile: Tuple[int, int],
+    partial_words: set,
+    tile: Tile,
     use_tile_size: bool,
     current_path: Path = [],
 ) -> List[Path]:
@@ -105,16 +130,18 @@ def __find_paths(
     else:
         new_string_size = 1
 
-    new_path = current_path + [tile]
+    updated_path = current_path + [tile]
+    # Get the new word:
+    word = __word_from_path(board, updated_path)
 
     # If we got the entire word, Check if it is in the list of words.
     if n == new_string_size:
-        # Get the new word:
-        word = __word_from_path(board, new_path)
         if word in words:
-            return [new_path]
+            return [updated_path]
         return []
-
+    # Check if the partial word we are building can form a word.
+    if word not in partial_words:
+        return []
     # If the tile has a string that is too long, we can't form an n sized word.
     if new_string_size > n:
         return []
@@ -132,9 +159,10 @@ def __find_paths(
             n - new_string_size,
             board,
             words,
+            partial_words,
             new_tile,
             use_tile_size,
-            new_path,
+            updated_path,
         ):
             paths.append(path)
     return paths
@@ -154,10 +182,12 @@ def find_length_n_paths(
         return []
     else:
         paths = []
+        partial_words = __partial_words_set(words)
+        # print(partial_words, words)
         for i in range(len(board)):
             for j in range(len(board[0])):
                 paths += __find_paths(
-                    n, board, words, (i, j), use_tile_size=False
+                    n, board, words, partial_words, (i, j), use_tile_size=False
                 )
         return paths
 
@@ -176,10 +206,13 @@ def find_length_n_words(
         return []
     else:
         paths = []
+        partial_words = __partial_words_set(
+            words, use_max_size=True, max_word_size=n
+        )
         for i in range(len(board)):
             for j in range(len(board[0])):
                 paths += __find_paths(
-                    n, board, words, (i, j), use_tile_size=True
+                    n, board, words, partial_words, (i, j), use_tile_size=True
                 )
         return paths
 
