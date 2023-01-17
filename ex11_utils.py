@@ -58,7 +58,6 @@ def __partial_words_set(
         if use_max_size and len(word) > max_word_size:
             continue
         partial_words.update({word[0:i] for i in range(len(word))})
-    print("sdasd", words, max_word_size, partial_words)
     return partial_words
 
 
@@ -183,7 +182,6 @@ def find_length_n_paths(
     else:
         paths = []
         partial_words = __partial_words_set(words)
-        # print(partial_words, words)
         for i in range(len(board)):
             for j in range(len(board[0])):
                 paths += __find_paths(
@@ -230,7 +228,7 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     tot_paths = []
 
     for n in range(max_path_len, 0, -1):
-        paths = find_length_n_paths(n, board, words)
+        paths = find_length_n_words(n, board, words)
         for path in paths:
             # Check if the word was already found.
             word = __word_from_path(board, path)
