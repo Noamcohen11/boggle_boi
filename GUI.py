@@ -1,29 +1,42 @@
 from tkinter import *
 from boggle_board_randomizer import randomize_board
-
+# from boggle import Boggle
 class GUI:
+    """
+    Class for the GUI of the Boggle game.
+    This class is responsible for creating and updating the GUI,
+    as well as andling events from the GUI.
+    """
+
     WIDTH = 800
     HEIGHT = 500
 
-    def __init__(self):
+    def __init__(self, game, board: list[list[str]]):
 
+        # Create window
         self.__master = Tk() # Create window
         self.__master.title("Boggle")
         self.__master.geometry(f"{self.WIDTH}x{self.HEIGHT}")
         self.__master.resizable(False, False)
+
+        # Create canvas
         self.__canvas = Canvas(self.__master, width=self.WIDTH, height=self.HEIGHT) # Create canvas
         self.__canvas.pack()
-        self.__board = randomize_board()
+
+        self.__game = game
+
+        # Create board
+        self.__board = board
         self.__size = (len(self.__board), len(self.__board[0])) # Size of the board
+        
         self.__tiles = self.__create_tiles(self.__size, self.__board)
-        self.__current_word = ""
-        self.__words = []
+
+        # Create current word placeholder and add word button
         self.__canvas.create_text(170, 90, text="", font=("Arial", 10), tags="current_word")
-        self.__add_button = Button(self.__master, text="Add word", command=self.__add_word)
-        # place button in top left corner
+        self.__add_button = Button(self.__master, text="Add word", command=self.__click_add_button)
         self.__add_button.place(x=20, y=50)
 
-    def __create_tiles(self, size: tuple, board: list[list[str]]):
+    def __create_tiles(self, size: tuple, board: list[list[str]]) -> list:
         """Creates tiles for the board
         :param size: a tuple of the dimensions of the board
         :param board: The board
@@ -32,7 +45,11 @@ class GUI:
         tiles = []  # List of tiles
         min_size = min(size)
         tile_size = min(self.WIDTH, self.HEIGHT)*0.9/min_size # Size of each tile
-        base = (self.WIDTH//2-tile_size*min_size/2 + 150, self.HEIGHT//2 - tile_size*min_size/2) # Top left corner of the grid
+
+        # Top left corner of the grid
+        base = (
+                self.WIDTH//2-tile_size*min_size/2 + 150,
+                self.HEIGHT//2 - tile_size*min_size/2) 
         print("DEBUG: board is ", board)
         for i in range(size[0]): # Create tiles
             for j in range(size[1]):
@@ -45,34 +62,44 @@ class GUI:
                 self.__canvas.move(tile, base[0]+tile_size*j, base[1]+tile_size*i)
                 # Bind click event to tile
                 self.__canvas.tag_bind(f"tile_{i}_{j}", "<Button-1>", self.__click_tile)
-                self.__canvas.tag_bind(f"tile_{i}_{j}", "<Button-3>", self.__click_tile)
                 
                 tiles.append(tile)
         return tiles # Return list of tiles
 
-    def __click_tile(self, event): # Event handler for clicking a tile
-        print("Clicked tile", event.widget.gettags(CURRENT)[0])
-        loc = event.widget.gettags(CURRENT)[0].split("_")[1:]
-        self.__update_current_word(self.__current_word + self.__board[int(loc[0])][int(loc[1])])
+    def __click_tile(self, event) -> None:
+        """Handles click events on tiles.
+        Calls the game's event_from_gui method with the event type "click_tile"
+        and the coordinates of the tile as event data."""
+        click_coordinates = event.widget.gettags(CURRENT)[0].split("_")[1:]
+        coordinate_dict = {
+                            "x": int(click_coordinates[0]), 
+                            "y": int(click_coordinates[1])
+                        }
+        self.__game.event_from_gui(
+                                    event_type="click_tile", 
+                                    event_data=coordinate_dict
+                                )
 
-    def __update_current_word(self, string: str):
-        self.__current_word = string
-        self.__canvas.itemconfig("current_word", text=f"{string}")
+    def __click_add_button(self) -> None:
+        """Handles click events on the add word button.
+        Calls the game's event_from_gui method with the event type "add_word"
+        """
+
+        self.__game.event_from_gui(event_type="add_word", event_data=None)
+
+    def update_current_word(self, string: str) -> None:
+        """Updates the current word placeholder with the given string"""
         self.__canvas.itemconfig("current_word", text=f"{string}")
 
-    def __add_word(self):
-        if self.__current_word == "" or self.__current_word in self.__words:
-            return
-        self.__words.append(self.__current_word)        
-        self.__canvas.create_text(170, 90, text=self.__current_word, font=("Arial", 10), tags=self.__current_word)
-        self.__update_current_word("")
-        for word in self.__words:
-            self.__canvas.move(word, 0, 15)
+    def add_word(self, word: str) -> None:
+        """Adds the given word to the list of words"""
+        self.__canvas.create_text(170, 90, text=word, font=("Arial", 10), tags="word")
+        self.__canvas.move("word", 0, 15)
 
     def mainloop(self):
+        """Starts the mainloop of the game"""
         self.__master.mainloop()
     
 
 if __name__ == "__main__":
-    app = GUI()
-    app.mainloop()
+    print("Error: This file is not meant to be run directly.")
