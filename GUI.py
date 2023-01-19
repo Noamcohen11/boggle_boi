@@ -72,8 +72,8 @@ class GUI:
         and the coordinates of the tile as event data."""
         click_coordinates = event.widget.gettags(CURRENT)[0].split("_")[1:]
         coordinate_dict = {
-                            "x": int(click_coordinates[0]), 
-                            "y": int(click_coordinates[1])
+                            "y": int(click_coordinates[0]), 
+                            "x": int(click_coordinates[1])
                         }
         self.__game.event_from_gui(
                                     event_type="click_tile", 

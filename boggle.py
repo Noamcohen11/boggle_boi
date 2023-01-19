@@ -16,7 +16,9 @@ class Boggle:
         self.__gui = GUI(self, self.__board)
 
         self.__words = []
-        self.__current_word = ""    
+
+        self.__current_word = ""
+        self.__current_path = []
 
     def event_from_gui(self, event_type: str, event_data: dict) -> None:
         """
@@ -31,11 +33,13 @@ class Boggle:
         For add_word event, event_data should be None
         """
         if event_type == "click_tile":
+            y, x = event_data["y"], event_data["x"]
             self.__update_current_word(
                                     self.__current_word +
-                                    self.__board[event_data["x"]][event_data["y"]]
+                                    self.__board[y][x]
                                     )
-            self.__gui.update_current_word(self.__current_word)
+            self.__current_path.append((y, x))
+            print("DEBUG: current path is ", self.__current_path)
 
         if event_type == "add_word":
             self.__add_word(self.__current_word)
@@ -56,11 +60,13 @@ class Boggle:
         :param word: The word to add
         """
 
-        if self.__current_word == "" or self.__current_word in self.__words:
-            return
-        self.__words.append(word)
-        self.__gui.add_word(self.__current_word)
+        # Check if the word is valid
+        if not (self.__current_word == "" or self.__current_word in self.__words):            
+            self.__words.append(word)
+            self.__gui.add_word(self.__current_word)
+
         self.__update_current_word("")
+        self.__current_path = []
 
     def play(self):
         self.__gui.mainloop()
