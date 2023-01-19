@@ -57,11 +57,12 @@ class GUI:
                 # Create tile
                 tile = self.__canvas.create_rectangle(0, 0, tile_size, tile_size, fill="white", outline="black", tags=f"tile_{i}_{j}")
                 # Create text
-                self.__canvas.create_text(x + tile_size/2, y+tile_size/2, text=board[i][j], font=("Arial", int(tile_size/2)), tags=f"tile_{i}_{j}")
+                self.__canvas.create_text(x + tile_size/2, y+tile_size/2, text=board[i][j], font=("Arial", int(tile_size/2)), tags=f"text_{i}_{j}")
                 # Move tile to correct position
                 self.__canvas.move(tile, base[0]+tile_size*j, base[1]+tile_size*i)
                 # Bind click event to tile
                 self.__canvas.tag_bind(f"tile_{i}_{j}", "<Button-1>", self.__click_tile)
+                self.__canvas.tag_bind(f"text_{i}_{j}", "<Button-1>", self.__click_tile)
                 
                 tiles.append(tile)
         return tiles # Return list of tiles
@@ -70,10 +71,16 @@ class GUI:
         """Handles click events on tiles.
         Calls the game's event_from_gui method with the event type "click_tile"
         and the coordinates of the tile as event data."""
-        click_coordinates = event.widget.gettags(CURRENT)[0].split("_")[1:]
+
+        tile_tag = event.widget.gettags(CURRENT)[0]
+        # Tile tag is in the format "tile_y_x" where y and x are the coordinates of the tile
+        y, x = tile_tag.split("_")[1:]
+
+        self.__canvas.itemconfig(f"tile_{y}_{x}", fill="#fc9790")        
+        
         coordinate_dict = {
-                            "y": int(click_coordinates[0]), 
-                            "x": int(click_coordinates[1])
+                            "y": int(y), 
+                            "x": int(x)
                         }
         self.__game.event_from_gui(
                                     event_type="click_tile", 
@@ -90,11 +97,18 @@ class GUI:
     def update_current_word(self, string: str) -> None:
         """Updates the current word placeholder with the given string"""
         self.__canvas.itemconfig("current_word", text=f"{string}")
+        if string == "":
+            self.clear_board()
 
     def add_word(self, word: str) -> None:
         """Adds the given word to the list of words"""
         self.__canvas.create_text(170, 90, text=word, font=("Arial", 10), tags="word")
         self.__canvas.move("word", 0, 15)
+
+    def clear_board(self) -> None:
+        """Clears the board"""
+        for tile in self.__tiles:
+            self.__canvas.itemconfig(tile, fill="white")
 
     def mainloop(self):
         """Starts the mainloop of the game"""
