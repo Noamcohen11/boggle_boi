@@ -1,4 +1,5 @@
 from tkinter import *
+from time import strftime, time
 from boggle_board_randomizer import randomize_board
 # from boggle import Boggle
 class GUI:
@@ -14,13 +15,13 @@ class GUI:
     def __init__(self, game, board: list[list[str]]):
 
         # Create window
-        self.__master = Tk() # Create window
-        self.__master.title("Boggle")
-        self.__master.geometry(f"{self.WIDTH}x{self.HEIGHT}")
-        self.__master.resizable(False, False)
+        self.__root = Tk() # Create window
+        self.__root.title("Boggle")
+        self.__root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
+        self.__root.resizable(False, False)
 
         # Create canvas
-        self.__canvas = Canvas(self.__master, width=self.WIDTH, height=self.HEIGHT) # Create canvas
+        self.__canvas = Canvas(self.__root, width=self.WIDTH, height=self.HEIGHT) # Create canvas
         self.__canvas.pack()
 
         self.__game = game
@@ -33,8 +34,16 @@ class GUI:
 
         # Create current word placeholder and add word button
         self.__canvas.create_text(170, 90, text="", font=("Arial", 10), tags="current_word")
-        self.__add_button = Button(self.__master, text="Add word", command=self.__click_add_button)
+        self.__add_button = Button(self.__root, text="Add word", command=self.__click_add_button)
         self.__add_button.place(x=20, y=50)
+
+        # Create a clock and a score
+        self.__start_time = time()
+        self.__end_time = 180 # 3 minutes TODO: Make this a variable
+        self.__canvas.create_text(50, 10, text="Time: 0", font=("Arial", 10), tags="time")
+        self.__canvas.create_text(200, 10, text="Score: 0", font=("Arial", 10), tags="score")
+
+        self.__update_clock()
 
     def __create_tiles(self, size: tuple, board: list[list[str]]) -> list:
         """Creates tiles for the board
@@ -85,9 +94,7 @@ class GUI:
                                     event_data=coordinate_dict
                                 ):
             self.__canvas.itemconfig(f"tile_{y}_{x}", fill="#fc9790")
-        
-        
-
+                
     def __click_add_button(self) -> None:
         """Handles click events on the add word button.
         Calls the game's event_from_gui method with the event type "add_word"
@@ -111,9 +118,18 @@ class GUI:
         for tile in self.__tiles:
             self.__canvas.itemconfig(tile, fill="white")
 
+    def __update_clock(self) -> None:
+        """Updates the clock"""
+        new_time = time() - self.__start_time
+        if new_time > 5:
+            self.__root.destroy()
+        self.__canvas.itemconfig("time", text=f"Time: {round(new_time)}")
+        self.__root.after(1000, self.__update_clock)
+        
+
     def mainloop(self):
-        """Starts the mainloop of the game"""
-        self.__master.mainloop()
+        """Starts the mainloop of the game"""        
+        self.__root.mainloop()
     
 
 if __name__ == "__main__":
