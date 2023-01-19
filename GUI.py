@@ -75,17 +75,18 @@ class GUI:
         tile_tag = event.widget.gettags(CURRENT)[0]
         # Tile tag is in the format "tile_y_x" where y and x are the coordinates of the tile
         y, x = tile_tag.split("_")[1:]
-
-        self.__canvas.itemconfig(f"tile_{y}_{x}", fill="#fc9790")        
-        
         coordinate_dict = {
                             "y": int(y), 
                             "x": int(x)
                         }
-        self.__game.event_from_gui(
+        # Call game's event_from_gui method. If the method returns True, change the color of the tile
+        if self.__game.event_from_gui(
                                     event_type="click_tile", 
                                     event_data=coordinate_dict
-                                )
+                                ):
+            self.__canvas.itemconfig(f"tile_{y}_{x}", fill="#fc9790")
+        
+        
 
     def __click_add_button(self) -> None:
         """Handles click events on the add word button.

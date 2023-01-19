@@ -20,12 +20,12 @@ class Boggle:
         self.__current_word = ""
         self.__current_path = []
 
-    def event_from_gui(self, event_type: str, event_data: dict) -> None:
+    def event_from_gui(self, event_type: str, event_data: dict) -> bool:
         """
         Handles events from the GUI.
         :param event_type: The type of event
         :param event_data: The data of the event
-        :return: None
+        :return: True if the event was successful, False otherwise
 
         note: 
         For click_tile event, event_data should be a dict with keys "x" and "y"
@@ -33,17 +33,23 @@ class Boggle:
         For add_word event, event_data should be None
         """
         if event_type == "click_tile":
+            # TODO: Check if the tile is valid i.e if it is adjacent to the last tile
+
             y, x = event_data["y"], event_data["x"]
             self.__update_current_word(
                                     self.__current_word +
                                     self.__board[y][x]
                                     )
             self.__current_path.append((y, x))
-            print("DEBUG: current path is ", self.__current_path)
+            
+            return True
 
         if event_type == "add_word":
+        # TODO: check if the word is valid
             self.__add_word(self.__current_word)
-            print("DEBUG: words is ", self.__words)
+            return True
+        
+        return False
 
     def __update_current_word(self, string: str) -> None:
         """
