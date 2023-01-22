@@ -1,5 +1,6 @@
 from boggle_board_randomizer import randomize_board
 from GUI import GUI
+from ex11_utils import is_valid_path, is_valid_partial_path
 
 class Boggle:
     """
@@ -8,14 +9,16 @@ class Boggle:
     and for comunication between the logic and GUI.
     """
 
-    def __init__(self):
+    def __init__(self, valid_words: list[str]):
 
         self.__board = randomize_board()
-
+        self.__valid_words = valid_words
         # Create the GUI object
         self.__gui = GUI(self, self.__board)
 
+        
         self.__words = []
+        self.__score = 0
 
         self.__current_word = ""
         self.__current_path = []
@@ -33,19 +36,23 @@ class Boggle:
         For add_word event, event_data should be None
         """
         if event_type == "click_tile":
-            # TODO: Check if the tile is valid i.e if it is adjacent to the last tile
 
             y, x = event_data["y"], event_data["x"]
+            self.__current_path.append((y, x))
+            # Check if the tile is valid
+            if not is_valid_partial_path(self.__board, self.__current_path):
+                print("Invalid tile")
+                self.__current_path.pop()
+                return False
+
             self.__update_current_word(
                                     self.__current_word +
                                     self.__board[y][x]
                                     )
-            self.__current_path.append((y, x))
             
             return True
 
         if event_type == "add_word":
-        # TODO: check if the word is valid
             self.__add_word(self.__current_word)
             return True
         
@@ -67,17 +74,28 @@ class Boggle:
         """
 
         # Check if the word is valid
-        if not (self.__current_word == "" or self.__current_word in self.__words):            
+        if not (self.__current_word == "" or self.__current_word in self.__words)\
+                and is_valid_path(self.__board, self.__current_path, self.__valid_words) != None:
+            # Add the word to the list of words
             self.__words.append(word)
             self.__gui.add_word(self.__current_word)
+            # Update the score
+            self.__score += len(self.__current_word) ** 2
+            self.__gui.update_score(self.__score)
 
+        # Clear the current word
         self.__update_current_word("")
         self.__current_path = []
+        
 
     def play(self):
         self.__gui.mainloop()
 
 
 if __name__ == "__main__":
-    game = Boggle()
+
+    # Open boggle_dict.txt and read the words into a list
+    with open("boggle_dict.txt", "r") as f:
+        valid_words = f.read().split()
+    game = Boggle(valid_words)
     game.play()

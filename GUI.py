@@ -37,6 +37,10 @@ class GUI:
         self.__add_button = Button(self.__root, text="Add word", command=self.__click_add_button)
         self.__add_button.place(x=20, y=50)
 
+        # Create a block for the words
+        self.__canvas.create_rectangle(20, 100, 150, 400, fill="white", outline="black", tags="words_block")
+        self.__canvas.create_text(85, 110, text="Words", font=("Arial", 10), tags="words_block")
+
         # Create a clock and a score
         self.__start_time = time()
         self.__end_time = 180 # 3 minutes TODO: Make this a variable
@@ -59,7 +63,6 @@ class GUI:
         base = (
                 self.WIDTH//2-tile_size*min_size/2 + 150,
                 self.HEIGHT//2 - tile_size*min_size/2) 
-        print("DEBUG: board is ", board)
         for i in range(size[0]): # Create tiles
             for j in range(size[1]):
                 x, y = base[0]+tile_size*j, base[1]+tile_size*i # Top left corner of tile
@@ -126,7 +129,11 @@ class GUI:
         self.__canvas.itemconfig("time", text=f"Time: {round(new_time)}")
         self.__root.after(1000, self.__update_clock)
         
-
+    def update_score(self, score: int) -> None:
+        """Updates the score
+        :param score: The new score
+        """
+        self.__canvas.itemconfig("score", text=f"Score: {score}")
     def mainloop(self):
         """Starts the mainloop of the game"""        
         self.__root.mainloop()
