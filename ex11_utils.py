@@ -57,7 +57,7 @@ def __partial_words_set(
     for word in words:
         if use_max_size and len(word) > max_word_size:
             continue
-        partial_words.update({word[0:i] for i in range(len(word))})
+        partial_words.update({word[0:i] for i in range(len(word) + 1)})
     return partial_words
 
 
@@ -112,6 +112,7 @@ def __find_paths(
     partial_words: set,
     tile: Tile,
     use_tile_size: bool,
+    save_undersized_words: bool,
     current_path: Path = [],
 ) -> List[Path]:
     """Finds all paths of length n starting from a given tile.
@@ -147,6 +148,11 @@ def __find_paths(
 
     # Continue to search for paths.
     paths = []
+
+    # if the word is in the list of words, but is undersized, we can still save it.
+    if word in words and save_undersized_words:
+        paths.append(updated_path)
+
     new_tiles = __possibe_movements(tile, board)
     for new_tile in new_tiles:
 
@@ -161,9 +167,11 @@ def __find_paths(
             partial_words,
             new_tile,
             use_tile_size,
+            save_undersized_words,
             updated_path,
         ):
             paths.append(path)
+
     return paths
 
 
@@ -185,7 +193,13 @@ def find_length_n_paths(
         for i in range(len(board)):
             for j in range(len(board[0])):
                 paths += __find_paths(
-                    n, board, words, partial_words, (i, j), use_tile_size=False
+                    n,
+                    board,
+                    words,
+                    partial_words,
+                    (i, j),
+                    use_tile_size=False,
+                    save_undersized_words=False,
                 )
         return paths
 
@@ -210,7 +224,13 @@ def find_length_n_words(
         for i in range(len(board)):
             for j in range(len(board[0])):
                 paths += __find_paths(
-                    n, board, words, partial_words, (i, j), use_tile_size=True
+                    n,
+                    board,
+                    words,
+                    partial_words,
+                    (i, j),
+                    use_tile_size=True,
+                    save_undersized_words=False,
                 )
         return paths
 
@@ -227,13 +247,29 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
     found_words_list = []
     tot_paths = []
 
-    for n in range(max_path_len, 0, -1):
-        paths = find_length_n_words(n, board, words)
-        for path in paths:
-            # Check if the word was already found.
-            word = __word_from_path(board, path)
-            if word not in found_words_list:
-                found_words_list.append(word)
-                tot_paths.append(path)
+    paths = []
+    partial_words = __partial_words_set(
+        words, use_max_size=True, max_word_size=max_path_len
+    )
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            paths += __find_paths(
+                max_path_len,
+                board,
+                words,
+                partial_words,
+                (i, j),
+                use_tile_size=False,
+                save_undersized_words=True,
+            )
+
+    paths.sort(key=len, reverse=True)
+    # Remove duplicates.
+    for path in paths:
+        # Check if the word was already found.
+        word = __word_from_path(board, path)
+        if word not in found_words_list:
+            found_words_list.append(word)
+            tot_paths.append(path)
 
     return tot_paths
