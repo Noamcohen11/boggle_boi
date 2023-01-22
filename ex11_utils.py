@@ -260,7 +260,7 @@ def max_score_paths(board: Board, words: Iterable[str]) -> List[Path]:
                 words,
                 partial_words,
                 (i, j),
-                use_tile_size=False,
+                use_tile_size=True,
                 save_undersized_words=True,
             )
 
