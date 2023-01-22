@@ -121,7 +121,7 @@ class GUI:
     def __update_clock(self) -> None:
         """Updates the clock"""
         new_time = time() - self.__start_time
-        if new_time > 5:
+        if new_time > self.__end_time:
             self.__root.destroy()
         self.__canvas.itemconfig("time", text=f"Time: {round(new_time)}")
         self.__root.after(1000, self.__update_clock)
