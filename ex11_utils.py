@@ -117,6 +117,7 @@ def __find_paths(
 ) -> List[Path]:
     """Finds all paths of length n starting from a given tile.
     :param use_tile_size: changes the value of the parameter n.
+    :param save_undersized_words: if True, saves paths for words that are undersized.
     :param n: if use_tile_size is True, n is the length of the path, otherwise
     it is the length of the word.
     :param board: two dimensional list of strings representing the board.
