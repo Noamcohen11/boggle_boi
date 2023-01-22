@@ -17,7 +17,7 @@ DIRECTIONS = [
 ]
 
 
-def __coord_legal(coordinate: Tile, board: Board) -> bool:
+def __coord_in_board(coordinate: Tile, board: Board) -> bool:
     """Checks if a coordinate is legal on the board.
     :param coordinate: tuple representing the coordinate.
     :param board: two dimensional list of strings representing the board.
@@ -34,7 +34,7 @@ def __possibe_movements(tile: Tile, board) -> List[Tile]:
     possible_movements = []
     for x, y in DIRECTIONS:
         new_tile = (tile[0] + x, tile[1] + y)
-        if __coord_legal(new_tile, board):
+        if __coord_in_board(new_tile, board):
             possible_movements.append(new_tile)
     return possible_movements
 
@@ -61,6 +61,49 @@ def __partial_words_set(
     return partial_words
 
 
+def __word_from_path(board: Board, path: Path) -> str:
+    """Returns the word formed by a given path.
+    :param board: two dimensional list of strings representing the board.
+    :param path: list of tuples representing the path taken to form a word.
+    :return: the word formed by the path."""
+    return "".join([board[x][y] for x, y in path])
+
+
+def is_valid_partial_path(
+    board: Board, path: Path, words: Iterable[str]
+) -> bool:
+    """
+    Checks if the path is valid.
+    None valid paths are:
+    1. Empty path.
+    2. Path that uses a tile twice.
+    3. Path that uses a tile that is not adjacent to the previous tile.
+    :param board: two dimensional list of strings representing the board
+    :param path: list of tuples representing the path taken to form a word.
+    :param words: list of strings representing the words that can be formed.
+    :return: True if the path is valid, false otherwise."""
+    # Check if the path is empty.
+    if len(path) == 0:
+        return False
+
+    # Check if the path uses a tile twice.
+    if len(path) != len(set(path)):
+        return False
+
+    # Initialize the word with the first tile.
+    if not __coord_in_board(path[0], board):
+        return False
+    former_x, former_y = path[0]
+
+    # Check if the rest of the path is legal.
+    for x, y in path[1::]:
+        if (x, y) not in __possibe_movements((former_x, former_y), board):
+            return False
+        former_x, former_y = x, y
+
+    return True
+
+
 def is_valid_path(
     board: Board, path: Path, words: Iterable[str]
 ) -> Optional[str]:
@@ -70,39 +113,14 @@ def is_valid_path(
     :param path: list of tuples representing the path taken to form a word.
     :param words: list of strings representing the words that can be formed.
     :return: the word if the path is valid, None otherwise."""
-    # Check if the path is empty.
-    if len(path) == 0:
+    if not is_valid_partial_path(board, path, words):
         return None
 
-    # Check if the path uses a tile twice.
-    if len(path) != len(set(path)):
-        return None
-
-    # Initialize the word with the first tile.
-    if not __coord_legal(path[0], board):
-        return None
-    former_x, former_y = path[0]
-    word = board[former_x][former_y]
-
-    # Check if the rest of the path is legal.
-    for x, y in path[1::]:
-        if (x, y) not in __possibe_movements((former_x, former_y), board):
-            return None
-        word += board[x][y]
-        former_x, former_y = x, y
-
+    word = __word_from_path(board, path)
     if word in words:
         return word
 
     return None
-
-
-def __word_from_path(board: Board, path: Path) -> str:
-    """Returns the word formed by a given path.
-    :param board: two dimensional list of strings representing the board.
-    :param path: list of tuples representing the path taken to form a word.
-    :return: the word formed by the path."""
-    return "".join([board[x][y] for x, y in path])
 
 
 def __find_paths(
