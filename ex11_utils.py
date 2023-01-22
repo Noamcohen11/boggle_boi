@@ -70,7 +70,8 @@ def __word_from_path(board: Board, path: Path) -> str:
 
 
 def is_valid_partial_path(
-    board: Board, path: Path, words: Iterable[str]
+    board: Board,
+    path: Path,
 ) -> bool:
     """
     Checks if the path is valid.
@@ -113,7 +114,7 @@ def is_valid_path(
     :param path: list of tuples representing the path taken to form a word.
     :param words: list of strings representing the words that can be formed.
     :return: the word if the path is valid, None otherwise."""
-    if not is_valid_partial_path(board, path, words):
+    if not is_valid_partial_path(board, path):
         return None
 
     word = __word_from_path(board, path)
