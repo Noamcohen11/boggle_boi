@@ -18,7 +18,7 @@ class GUI:
         """Initializes the connection between the GUI and the game."""
         self.__game = game
         self.__board = board
-
+        self.__num_words = 0
         self.__opening_screen_text = self.MENU_SCREEN_TEXT
 
     def __create_tiles(self, size: tuple, board: list[list[str]]) -> list:
@@ -85,8 +85,14 @@ class GUI:
 
     def add_word(self, word: str) -> None:
         """Adds the given word to the list of words"""
-        self.__canvas.create_text(85, 110, text=word, font=("Arial", 10), tags="word")
-        self.__canvas.move("word", 0, 15)
+        if self.__num_words % 2 == 0:
+            self.__canvas.move("word", 0, 18)
+            self.__canvas.create_text(100, 135, text=word, font=("Arial", 10), tags="word")
+
+        else:
+            self.__canvas.create_text(220, 135, text=word, font=("Arial", 10), tags="word")
+
+        self.__num_words += 1
 
     def clear_board(self) -> None:
         """Clears the board"""
