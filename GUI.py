@@ -11,43 +11,15 @@ class GUI:
 
     WIDTH = 800
     HEIGHT = 500
+    END_TIME = 180
+    MENU_SCREEN_TEXT = "Welcome to Boggle!\nDo you want to play a game?"
 
     def __init__(self, game, board: list[list[str]]):
-
-        # Create window
-        self.__root = Tk() # Create window
-        self.__root.title("Boggle")
-        self.__root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
-        self.__root.resizable(False, False)
-
-        # Create canvas
-        self.__canvas = Canvas(self.__root, width=self.WIDTH, height=self.HEIGHT) # Create canvas
-        self.__canvas.pack()
-
+        """Initializes the connection between the GUI and the game."""
         self.__game = game
-
-        # Create board
         self.__board = board
-        self.__size = (len(self.__board), len(self.__board[0])) # Size of the board
-        
-        self.__tiles = self.__create_tiles(self.__size, self.__board)
 
-        # Create current word placeholder and add word button
-        self.__canvas.create_text(170, 90, text="", font=("Arial", 10), tags="current_word")
-        self.__add_button = Button(self.__root, text="Add word", command=self.__click_add_button)
-        self.__add_button.place(x=20, y=50)
-
-        # Create a block for the words
-        self.__canvas.create_rectangle(20, 100, 150, 400, fill="white", outline="black", tags="words_block")
-        self.__canvas.create_text(85, 110, text="Words", font=("Arial", 10), tags="words_block")
-
-        # Create a clock and a score
-        self.__start_time = time()
-        self.__end_time = 180 # 3 minutes TODO: Make this a variable
-        self.__canvas.create_text(50, 10, text="Time: 0", font=("Arial", 10), tags="time")
-        self.__canvas.create_text(200, 10, text="Score: 0", font=("Arial", 10), tags="score")
-
-        self.__update_clock()
+        self.__opening_screen_text = self.MENU_SCREEN_TEXT
 
     def __create_tiles(self, size: tuple, board: list[list[str]]) -> list:
         """Creates tiles for the board
@@ -126,6 +98,7 @@ class GUI:
         new_time = time() - self.__start_time
         if new_time > self.__end_time:
             self.__root.destroy()
+
         self.__canvas.itemconfig("time", text=f"Time: {round(new_time)}")
         self.__root.after(1000, self.__update_clock)
         
@@ -134,10 +107,98 @@ class GUI:
         :param score: The new score
         """
         self.__canvas.itemconfig("score", text=f"Score: {score}")
-    def mainloop(self):
+    
+    def __menu_screen(self, text: str = "") -> None:
+        """Shows the openeing screen"""
+
+        self.__opening_screen = Tk()
+        self.__opening_screen.title("Opening Screen")
+        self.__opening_screen.geometry("600x300")
+        self.__opening_screen.resizable(False, False)
+
+        # Create opening screen text
+        opening_screen_text = Label(
+                                    self.__opening_screen,
+                                    text=text,
+                                    font=("Arial", 20)
+                                    )
+        
+        # Create play button action i.e exit the opening screen and start the game
+        play_button_action = lambda *args: self.__opening_screen.destroy() or self.__play_game()
+
+        # Create quit button action i.e exit the opening screen
+        quit_button_action = lambda *args: self.__opening_screen.destroy() or self.__game.event_from_gui("quit_game", None)
+
+        # Create play and quit buttons
+        play_button = Button(
+                            self.__opening_screen,
+                            text="Play",
+                            height=3,
+                            width=10,
+                            bg="#8efaad",
+                            command=play_button_action
+                            )
+
+        quit_button = Button(
+                            self.__opening_screen,
+                            text="Quit",
+                            height=3,
+                            width=10,
+                            bg="#fc9790",
+                            command=quit_button_action
+                            )
+
+        # Place the buttons on the screen
+        opening_screen_text.pack()
+
+        play_button.pack()
+        play_button.place(relx=0.25, rely=0.5, anchor=CENTER)
+        quit_button.pack()
+        quit_button.place(relx=0.75, rely=0.5, anchor=CENTER)
+
+
+        self.__opening_screen.mainloop()
+
+    def start_game(self, text: str = "") -> None:
         """Starts the mainloop of the game"""        
+        self.__menu_screen(text)
+
+    def __play_game(self) -> None:
+        """Starts the game"""
+
+        self.__root = Tk() # Create window
+        self.__root.title("Boggle")
+        self.__root.geometry(f"{self.WIDTH}x{self.HEIGHT}")
+        self.__root.resizable(False, False)
+
+        
+        # Create canvas
+        self.__canvas = Canvas(self.__root, width=self.WIDTH, height=self.HEIGHT) # Create canvas
+        self.__canvas.pack()
+
+
+        # Create board
+        self.__size = (len(self.__board), len(self.__board[0])) # Size of the board
+        
+        self.__tiles = self.__create_tiles(self.__size, self.__board)
+
+        # Create current word placeholder and add word button
+        self.__canvas.create_text(200, 70, text="", font=("Arial", 19, "bold"), tags="current_word")
+        self.__add_button = Button(self.__root, text="Add word", font=("Arial", 10, "bold"), height=2, command=self.__click_add_button)
+        self.__add_button.place(x=20, y=50)
+
+        # Create a block for the words
+        self.__canvas.create_rectangle(20, 100, 305, 400, fill="white", outline="black", tags="words_block")
+        self.__canvas.create_text(155, 110, text="Words", font=("Arial", 10), tags="words_block")
+
+        # Create a clock and a score
+        self.__start_time = time()
+        self.__end_time = self.END_TIME
+        self.__canvas.create_text(50, 10, text="Time: 0", font=("Arial", 10), tags="time")
+        self.__canvas.create_text(200, 10, text="Score: 0", font=("Arial", 10), tags="score")
+
+        self.__update_clock()
         self.__root.mainloop()
     
-
 if __name__ == "__main__":
     print("Error: This file is not meant to be run directly.")

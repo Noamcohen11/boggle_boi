@@ -11,12 +11,21 @@ class Boggle:
 
     def __init__(self, valid_words: list[str]):
 
+        self.__valid_words = valid_words        
+        self.__keep_playing = True
+        self.__menu_screen_text = "Welcome to Boggle!\nDo you want to play a game?"
+
+    def __setup_game(self) -> None:
+        """
+        Sets up the board.
+        """
+        # Create the board
         self.__board = randomize_board()
-        self.__valid_words = valid_words
+
         # Create the GUI object
         self.__gui = GUI(self, self.__board)
-
         
+        # Sets the game to a neutral state
         self.__words = []
         self.__score = 0
 
@@ -35,6 +44,10 @@ class Boggle:
         representing the coordinates of the tile
         For add_word event, event_data should be None
         """
+        if event_type == "quit_game":
+            self.__keep_playing = False
+            return True
+        
         if event_type == "click_tile":
 
             y, x = event_data["y"], event_data["x"]
@@ -87,9 +100,13 @@ class Boggle:
         self.__update_current_word("")
         self.__current_path = []
         
-
     def play(self):
-        self.__gui.mainloop()
+        
+        while(self.__keep_playing):
+            self.__setup_game()
+            self.__gui.start_game(self.__menu_screen_text)
+            self.__menu_screen_text = "Do you want to play again?"
+        
 
 
 if __name__ == "__main__":
