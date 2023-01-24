@@ -68,7 +68,7 @@ class GUI:
                                     event_type="click_tile", 
                                     event_data=coordinate_dict
                                 ):
-            self.__canvas.itemconfig(f"tile_{y}_{x}", fill="#fc9790")
+            self.__canvas.itemconfig(f"tile_{y}_{x}", fill="#92cff0")
                 
     def __click_add_button(self) -> None:
         """Handles click events on the add word button.
