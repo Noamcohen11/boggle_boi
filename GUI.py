@@ -113,7 +113,7 @@ class GUI:
 
     def add_word(self, word: str) -> None:
         """Adds the given word to the list of words"""
-        self.__canvas.create_text(170, 90, text=word, font=("Arial", 10), tags="word")
+        self.__canvas.create_text(85, 110, text=word, font=("Arial", 10), tags="word")
         self.__canvas.move("word", 0, 15)
 
     def clear_board(self) -> None:
