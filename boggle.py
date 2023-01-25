@@ -54,7 +54,6 @@ class Boggle:
             self.__current_path.append((y, x))
             # Check if the tile is valid
             if not is_valid_partial_path(self.__board, self.__current_path):
-                print("Invalid tile")
                 self.__current_path.pop()
                 return False
 
